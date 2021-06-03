@@ -281,6 +281,7 @@ task checkMavenCoordinateCollisions {
 }
 
 tasks.register('checkPluginAPIChanges', DefaultTask) {}
+
 checkPluginAPIChanges.dependsOn(':plugin-api:checkAPIChanges')
 check.dependsOn('checkPluginAPIChanges', 'checkMavenCoordinateCollisions')
 
@@ -349,11 +350,8 @@ subprojects {
     logger.info("Project = " + project.name + " Has Source Set (" + sourceSetName + ") = " + result + "(" + project.sourceSets.names + ")")
     return result
   }
-
   if (sourceSetIsPopulated("main") || sourceSetIsPopulated("testSupport")) {
-    apply plugin: 'com.jfrog.artifactory'
     apply plugin: 'maven-publish'
-
     publishing {
       publications {
         mavenJava(MavenPublication) {
@@ -364,50 +362,19 @@ subprojects {
             artifact sourcesJar
             artifact javadocJar
           }
-
-          if (sourceSetIsPopulated("testSupport")) {
+          if (sourceSetIsPopulated("testSupport"))
             artifact testSupportJar
-          }
+
           versionMapping {
             usage('java-api') { fromResolutionOf('runtimeClasspath') }
             usage('java-runtime') { fromResolutionResult() }
           }
           pom {
             name = "Besu - ${project.name}"
-            url = 'http://github.com/hyperledger/besu'
-            licenses {
-              license {
-                name = 'The Apache License, Version 2.0'
-                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-              }
-            }
-            scm {
-              connection = 'scm:git:git://github.com/hyperledger/besu.git'
-              developerConnection = 'scm:git:ssh://github.com/hyperledger/besu.git'
-              url = 'https://github.com/hyperledger/besu'
-            }
           }
-        }
-      }
-    }
-
-    def artifactoryUser = project.hasProperty('artifactoryUser') ? project.property('artifactoryUser') : System.getenv('ARTIFACTORY_USER')
-    def artifactoryKey = project.hasProperty('artifactoryApiKey') ? project.property('artifactoryApiKey') : System.getenv('ARTIFACTORY_KEY')
-    def artifactoryRepo = System.getenv('ARTIFACTORY_REPO') ?: 'besu-maven'
-    def artifactoryOrg = System.getenv('ARTIFACTORY_ORG') ?: 'hyperledger'
-
-    artifactory {
-      contextUrl = "https://hyperledger.jfrog.io/${artifactoryOrg}"
-      publish {
-        repository {
-          repoKey = "${artifactoryRepo}"
-          username = artifactoryUser
-          password = artifactoryKey
-        }
-        defaults {
-          publications('mavenJava')
-          publishArtifacts = true
-          publishPom = true
+          repositories {
+            mavenLocal()
+          }
         }
       }
     }
