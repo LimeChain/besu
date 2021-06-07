@@ -103,9 +103,9 @@ import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 
 /** Provides EVMs supporting the appropriate operations for mainnet hard forks. */
-abstract class MainnetEvmRegistries {
+public abstract class MainnetEvmRegistries {
 
-  static EVM frontier(final GasCalculator gasCalculator) {
+  public static EVM frontier(final GasCalculator gasCalculator) {
     final OperationRegistry registry = new OperationRegistry();
 
     registerFrontierOpcodes(registry, gasCalculator, Account.DEFAULT_VERSION);
@@ -113,7 +113,7 @@ abstract class MainnetEvmRegistries {
     return new EVM(registry, gasCalculator);
   }
 
-  static EVM homestead(final GasCalculator gasCalculator) {
+  public static EVM homestead(final GasCalculator gasCalculator) {
     final OperationRegistry registry = new OperationRegistry();
 
     registerHomesteadOpcodes(registry, gasCalculator, Account.DEFAULT_VERSION);
@@ -121,7 +121,7 @@ abstract class MainnetEvmRegistries {
     return new EVM(registry, gasCalculator);
   }
 
-  static EVM byzantium(final GasCalculator gasCalculator) {
+  public static EVM byzantium(final GasCalculator gasCalculator) {
     final OperationRegistry registry = new OperationRegistry();
 
     registerByzantiumOpcodes(registry, gasCalculator, Account.DEFAULT_VERSION);
@@ -129,7 +129,7 @@ abstract class MainnetEvmRegistries {
     return new EVM(registry, gasCalculator);
   }
 
-  static EVM constantinople(final GasCalculator gasCalculator) {
+  public static EVM constantinople(final GasCalculator gasCalculator) {
     final OperationRegistry registry = new OperationRegistry();
 
     registerConstantinopleOpcodes(registry, gasCalculator, Account.DEFAULT_VERSION);
@@ -137,7 +137,7 @@ abstract class MainnetEvmRegistries {
     return new EVM(registry, gasCalculator);
   }
 
-  static EVM istanbul(final GasCalculator gasCalculator, final BigInteger chainId) {
+  public static EVM istanbul(final GasCalculator gasCalculator, final BigInteger chainId) {
     final OperationRegistry registry = new OperationRegistry();
 
     registerIstanbulOpcodes(registry, gasCalculator, Account.DEFAULT_VERSION, chainId);
@@ -145,7 +145,7 @@ abstract class MainnetEvmRegistries {
     return new EVM(registry, gasCalculator);
   }
 
-  static EVM london(final GasCalculator gasCalculator, final BigInteger chainId) {
+  public static EVM london(final GasCalculator gasCalculator, final BigInteger chainId) {
     final OperationRegistry registry = new OperationRegistry();
 
     registerLondonOpcodes(registry, gasCalculator, Account.DEFAULT_VERSION, chainId);

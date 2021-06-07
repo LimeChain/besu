@@ -34,7 +34,7 @@ public class ProcessableBlockHeader {
   // base fee is included for post EIP-1559 blocks
   protected final Long baseFee;
 
-  protected ProcessableBlockHeader(
+  public ProcessableBlockHeader(
       final Hash parentHash,
       final Address coinbase,
       final Difficulty difficulty,
