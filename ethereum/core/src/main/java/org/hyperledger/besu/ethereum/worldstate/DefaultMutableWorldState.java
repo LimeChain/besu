@@ -49,18 +49,20 @@ import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.units.bigints.UInt256;
 
+// TODO Research the preimages
 public class DefaultMutableWorldState implements MutableWorldState {
 
   private final WorldStateStorage worldStateStorage;
   private final WorldStatePreimageStorage preimageStorage;
 
-  private final MerklePatriciaTrie<Bytes32, Bytes> accountStateTrie;
+  private final MerklePatriciaTrie<Bytes32, Bytes> accountStateTrie; // -> partially updates the hedera account model
   private final Map<Address, MerklePatriciaTrie<Bytes32, Bytes>> updatedStorageTries =
       new HashMap<>();
   private final Map<Address, Bytes> updatedAccountCode = new HashMap<>();
   private final Map<Bytes32, UInt256> newStorageKeyPreimages = new HashMap<>();
   private final Map<Bytes32, Address> newAccountKeyPreimages = new HashMap<>();
 
+  // TODO use genesis for now? (meaning no NODE_HASH)
   public DefaultMutableWorldState(
       final WorldStateStorage storage, final WorldStatePreimageStorage preimageStorage) {
     this(MerklePatriciaTrie.EMPTY_TRIE_NODE_HASH, storage, preimageStorage);
@@ -74,6 +76,15 @@ public class DefaultMutableWorldState implements MutableWorldState {
     this.accountStateTrie = newAccountStateTrie(rootHash);
     this.preimageStorage = preimageStorage;
   }
+
+//  public DefaultMutableWorldState(
+//          final WorldStateStorage worldStateStorage,
+//          final WorldStatePreimageStorage preimageStorage,
+          // TODO how to initialise accountStateTrie?
+//          ) {
+//
+//  }
+
 
   public DefaultMutableWorldState(final WorldState worldState) {
     // TODO: this is an abstraction leak (and kind of incorrect in that we reuse the underlying
@@ -102,11 +113,13 @@ public class DefaultMutableWorldState implements MutableWorldState {
         b -> b);
   }
 
+  // TODO we do not need the RootHash
   @Override
   public Hash rootHash() {
     return Hash.wrap(accountStateTrie.getRootHash());
   }
 
+  // TODO we do not need the RootHash
   @Override
   public Hash frontierRootHash() {
     return rootHash();
@@ -117,6 +130,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
     return new DefaultMutableWorldState(rootHash(), worldStateStorage, preimageStorage);
   }
 
+  // TODO We will use our implementation for accountState
   @Override
   public Account get(final Address address) {
     final Hash addressHash = Hash.hash(address);
@@ -126,6 +140,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
         .orElse(null);
   }
 
+  // TODO we won't need deserializeAccount. AccountState will return already deserialised account
   private WorldStateAccount deserializeAccount(
       final Address address, final Hash addressHash, final Bytes encoded) throws RLPException {
     final RLPInput in = RLP.input(encoded);
@@ -133,6 +148,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
     return new WorldStateAccount(address, addressHash, accountValue);
   }
 
+  // TODO we won't need deserializeAccount. AccountState will return already deserialised account
   private static Bytes serializeAccount(
       final long nonce,
       final Wei balance,
@@ -149,6 +165,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
     return new Updater(this);
   }
 
+  // TODO we won't need/support this
   @Override
   public Stream<StreamableAccount> streamAccounts(final Bytes32 startKeyHash, final int limit) {
     return accountStateTrie.entriesFrom(startKeyHash, limit).entrySet().stream()
@@ -181,16 +198,19 @@ public class DefaultMutableWorldState implements MutableWorldState {
   public void persist(final BlockHeader blockHeader) {
     final WorldStateStorage.Updater stateUpdater = worldStateStorage.updater();
     // Store updated code
+    // TODO -> Adds/Removes code from the Account state
     for (final Bytes code : updatedAccountCode.values()) {
       stateUpdater.putCode(null, code);
     }
     // Commit account storage tries
+    // TODO -> VirtualMaps where we have to commit?
     for (final MerklePatriciaTrie<Bytes32, Bytes> updatedStorage : updatedStorageTries.values()) {
       updatedStorage.commit(
           (location, hash, value) ->
               stateUpdater.putAccountStorageTrieNode(null, location, hash, value));
     }
     // Commit account updates
+    // TODO we will commit the Account changes from here
     accountStateTrie.commit(stateUpdater::putAccountStateTrieNode);
 
     // Persist preimages
@@ -449,7 +469,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
                 storageRoot,
                 codeHash,
                 updated.getVersion());
-
+        // TODO We will put directly the JavaClass instead of the bytes
         wrapped.accountStateTrie.put(updated.getAddressHash(), account);
       }
     }
