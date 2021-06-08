@@ -103,11 +103,11 @@ public class MainnetTransactionValidator {
    */
   public ValidationResult<TransactionInvalidReason> validate(
       final Transaction transaction, final Optional<Long> baseFee) {
-    final ValidationResult<TransactionInvalidReason> signatureResult =
-        validateTransactionSignature(transaction);
-    if (!signatureResult.isValid()) {
-      return signatureResult;
-    }
+    //    final ValidationResult<TransactionInvalidReason> signatureResult =
+    //        validateTransactionSignature(transaction);
+    //    if (!signatureResult.isValid()) {
+    //      return signatureResult;
+    //    }
 
     if (goQuorumCompatibilityMode && !transaction.getGasPrice().isZero()) {
       return ValidationResult.invalid(

@@ -1256,7 +1256,7 @@ public class MessageFrame {
 
     private void validate() {
       checkState(type != null, "Missing message frame type");
-//      checkState(blockchain != null, "Missing message frame blockchain");
+      //      checkState(blockchain != null, "Missing message frame blockchain");
       checkState(messageFrameStack != null, "Missing message frame message frame stack");
       checkState(worldState != null, "Missing message frame world state");
       checkState(initialGas != null, "Missing message frame initial getGasRemaining");
