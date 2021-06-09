@@ -237,22 +237,19 @@ public class DefaultMutableWorldState implements MutableWorldState {
 
   // An immutable class that represents an individual account as stored in
   // in the world state's underlying merkle patricia trie.
-  protected class WorldStateAccount implements Account {
+  public class WorldStateAccount implements Account {
 
     private final Address address;
-    private final Hash addressHash;
-
-    final StateTrieAccountValue accountValue;
+    private final long nonce;
+    private final Wei balance;
 
     // Lazily initialized since we don't always access storage.
     private volatile AccountStorageMap storageTrie;
 
-    private WorldStateAccount(
-        final Address address, final Hash addressHash, final StateTrieAccountValue accountValue) {
-
+    public WorldStateAccount(final Address address, final long nonce, final Wei balance) {
       this.address = address;
-      this.addressHash = addressHash;
-      this.accountValue = accountValue;
+      this.nonce = nonce;
+      this.balance = balance;
     }
 
     // TODO add new constructor?
@@ -275,21 +272,21 @@ public class DefaultMutableWorldState implements MutableWorldState {
 
     @Override
     public Hash getAddressHash() {
-      return addressHash;
+      return Hash.EMPTY; // Not supported!
     }
 
     @Override
     public long getNonce() {
-      return accountValue.getNonce();
+      return nonce;
     }
 
     @Override
     public Wei getBalance() {
-      return accountValue.getBalance();
+      return balance;
     }
 
     Hash getStorageRoot() {
-      return accountValue.getStorageRoot();
+      return Hash.EMPTY; // Not supported!
     }
 
     @Override
@@ -313,12 +310,12 @@ public class DefaultMutableWorldState implements MutableWorldState {
 
     @Override
     public Hash getCodeHash() {
-      return accountValue.getCodeHash();
+      return Hash.EMPTY; // Not supported!
     }
 
     @Override
     public int getVersion() {
-      return accountValue.getVersion();
+      return 1; // Not supported!
     }
 
     @Override
@@ -376,10 +373,8 @@ public class DefaultMutableWorldState implements MutableWorldState {
     @Override
     protected WorldStateAccount getForMutation(final Address address) {
       final DefaultMutableWorldState wrapped = wrappedWorldView();
-      final Hash addressHash = Hash.hash(address);
-      // TODO ugly fix
       Account acc = wrapped.accountStateStore.get(address);
-      return wrapped.new WorldStateAccount(acc.getAddress(), addressHash, null);
+      return wrapped.new WorldStateAccount(acc.getAddress(), acc.getNonce(), acc.getBalance());
     }
 
     @Override
