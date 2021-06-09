@@ -49,7 +49,8 @@ public interface AccountStateStore {
    */
   void put(Address address, long nonce, Wei balance);
 
-  // TODO how we will store Contract bytecode? -> for now we are using FcBlobStore(?) MerkleOptionalBlob
+  // TODO how we will store Contract bytecode? -> for now we are using FcBlobStore(?)
+  // MerkleOptionalBlob
   /**
    * Updates the Code for a given Account
    *
@@ -82,8 +83,8 @@ public interface AccountStateStore {
   void clearStorage(Address address);
 
   /**
-   * Commits the performed changes into the State.
-   * All operations must be provisional and applied on commit
+   * Commits the performed changes into the State. All operations must be provisional and applied on
+   * commit
    */
   void commit();
 }

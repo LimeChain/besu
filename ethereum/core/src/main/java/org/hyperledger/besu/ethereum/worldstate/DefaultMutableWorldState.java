@@ -364,7 +364,8 @@ public class DefaultMutableWorldState implements MutableWorldState {
         }
 
         // Lastly, save the new account.
-        wrapped.accountStateStore.put(updated.getAddress(), updated.getNonce(), updated.getBalance());
+        wrapped.accountStateStore.put(
+            updated.getAddress(), updated.getNonce(), updated.getBalance());
         // Commit account state changes
         wrapped.accountStateStore.commit();
 
