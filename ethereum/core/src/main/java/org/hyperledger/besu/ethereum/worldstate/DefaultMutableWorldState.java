@@ -16,7 +16,6 @@ package org.hyperledger.besu.ethereum.worldstate;
 
 import org.hyperledger.besu.ethereum.core.AbstractWorldUpdater;
 import org.hyperledger.besu.ethereum.core.Account;
-import org.hyperledger.besu.ethereum.core.AccountState;
 import org.hyperledger.besu.ethereum.core.AccountStorageEntry;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
@@ -27,10 +26,8 @@ import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.core.WorldState;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.ethereum.rlp.RLP;
-import org.hyperledger.besu.ethereum.rlp.RLPException;
 import org.hyperledger.besu.ethereum.rlp.RLPInput;
 import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
-import org.hyperledger.besu.ethereum.trie.StoredMerklePatriciaTrie;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,8 +36,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -49,18 +44,18 @@ import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.units.bigints.UInt256;
 
-// TODO Research the preimages
 public class DefaultMutableWorldState implements MutableWorldState {
 
   private final WorldStateStorage worldStateStorage;
   private final WorldStatePreimageStorage preimageStorage;
 
-  private final MerklePatriciaTrie<Bytes32, Bytes> accountStateTrie; // -> partially updates the hedera account model
-  private final Map<Address, MerklePatriciaTrie<Bytes32, Bytes>> updatedStorageTries =
-      new HashMap<>();
+  private final AccountStateStore accountStateStore;
+  private final Map<Address, AccountStorageMap> updatedStorageTries = new HashMap<>();
   private final Map<Address, Bytes> updatedAccountCode = new HashMap<>();
-  private final Map<Bytes32, UInt256> newStorageKeyPreimages = new HashMap<>();
-  private final Map<Bytes32, Address> newAccountKeyPreimages = new HashMap<>();
+
+  // TODO Research the preimages
+//  private final Map<Bytes32, UInt256> newStorageKeyPreimages = new HashMap<>();
+//  private final Map<Bytes32, Address> newAccountKeyPreimages = new HashMap<>();
 
   // TODO use genesis for now? (meaning no NODE_HASH)
   public DefaultMutableWorldState(
@@ -73,17 +68,20 @@ public class DefaultMutableWorldState implements MutableWorldState {
       final WorldStateStorage worldStateStorage,
       final WorldStatePreimageStorage preimageStorage) {
     this.worldStateStorage = worldStateStorage;
-    this.accountStateTrie = newAccountStateTrie(rootHash);
+    this.accountStateStore = null;
     this.preimageStorage = preimageStorage;
   }
 
-//  public DefaultMutableWorldState(
-//          final WorldStateStorage worldStateStorage,
-//          final WorldStatePreimageStorage preimageStorage,
-          // TODO how to initialise accountStateTrie?
-//          ) {
-//
-//  }
+  public DefaultMutableWorldState(
+          final WorldStateStorage worldStateStorage,
+          final WorldStatePreimageStorage preimageStorage,
+          final AccountStateStore accountStateStore
+          ) {
+    this.worldStateStorage = worldStateStorage;
+    this.accountStateStore = accountStateStore;
+    this.preimageStorage = preimageStorage;
+
+  }
 
 
   public DefaultMutableWorldState(final WorldState worldState) {
@@ -97,26 +95,22 @@ public class DefaultMutableWorldState implements MutableWorldState {
     final DefaultMutableWorldState other = (DefaultMutableWorldState) worldState;
     this.worldStateStorage = other.worldStateStorage;
     this.preimageStorage = other.preimageStorage;
-    this.accountStateTrie = newAccountStateTrie(other.accountStateTrie.getRootHash());
+    this.accountStateStore = null;
   }
 
-  private MerklePatriciaTrie<Bytes32, Bytes> newAccountStateTrie(final Bytes32 rootHash) {
-    return new StoredMerklePatriciaTrie<>(
-        worldStateStorage::getAccountStateTrieNode, rootHash, b -> b, b -> b);
-  }
+//  private MerklePatriciaTrie<Bytes32, Bytes> newAccountStateTrie(final Bytes32 rootHash) {
+//    return new StoredMerklePatriciaTrie<>(
+//        worldStateStorage::getAccountStateTrieNode, rootHash, b -> b, b -> b);
+//  }
 
-  private MerklePatriciaTrie<Bytes32, Bytes> newAccountStorageTrie(final Bytes32 rootHash) {
-    return new StoredMerklePatriciaTrie<>(
-        (location, hash) -> worldStateStorage.getAccountStorageTrieNode(null, location, hash),
-        rootHash,
-        b -> b,
-        b -> b);
+  private AccountStorageMap newAccountStorageMap(final Address address) {
+    return accountStateStore.newStorageMap(address);
   }
 
   // TODO we do not need the RootHash
   @Override
   public Hash rootHash() {
-    return Hash.wrap(accountStateTrie.getRootHash());
+    return Hash.EMPTY;
   }
 
   // TODO we do not need the RootHash
@@ -125,40 +119,36 @@ public class DefaultMutableWorldState implements MutableWorldState {
     return rootHash();
   }
 
+  // TODO We do not need it
   @Override
   public MutableWorldState copy() {
     return new DefaultMutableWorldState(rootHash(), worldStateStorage, preimageStorage);
   }
 
-  // TODO We will use our implementation for accountState
   @Override
   public Account get(final Address address) {
-    final Hash addressHash = Hash.hash(address);
-    return accountStateTrie
-        .get(addressHash)
-        .map(bytes -> deserializeAccount(address, addressHash, bytes))
-        .orElse(null);
+    return accountStateStore.get(address);
   }
 
   // TODO we won't need deserializeAccount. AccountState will return already deserialised account
-  private WorldStateAccount deserializeAccount(
-      final Address address, final Hash addressHash, final Bytes encoded) throws RLPException {
-    final RLPInput in = RLP.input(encoded);
-    final StateTrieAccountValue accountValue = StateTrieAccountValue.readFrom(in);
-    return new WorldStateAccount(address, addressHash, accountValue);
-  }
+//  private WorldStateAccount deserializeAccount(
+//      final Address address, final Hash addressHash, final Bytes encoded) throws RLPException {
+//    final RLPInput in = RLP.input(encoded);
+//    final StateTrieAccountValue accountValue = StateTrieAccountValue.readFrom(in);
+//    return new WorldStateAccount(address, addressHash, accountValue);
+//  }
 
   // TODO we won't need deserializeAccount. AccountState will return already deserialised account
-  private static Bytes serializeAccount(
-      final long nonce,
-      final Wei balance,
-      final Hash storageRoot,
-      final Hash codeHash,
-      final int version) {
-    final StateTrieAccountValue accountValue =
-        new StateTrieAccountValue(nonce, balance, storageRoot, codeHash, version);
-    return RLP.encode(accountValue::writeTo);
-  }
+//  private static Bytes serializeAccount(
+//      final long nonce,
+//      final Wei balance,
+//      final Hash storageRoot,
+//      final Hash codeHash,
+//      final int version) {
+//    final StateTrieAccountValue accountValue =
+//        new StateTrieAccountValue(nonce, balance, storageRoot, codeHash, version);
+//    return RLP.encode(accountValue::writeTo);
+//  }
 
   @Override
   public WorldUpdater updater() {
@@ -168,15 +158,16 @@ public class DefaultMutableWorldState implements MutableWorldState {
   // TODO we won't need/support this
   @Override
   public Stream<StreamableAccount> streamAccounts(final Bytes32 startKeyHash, final int limit) {
-    return accountStateTrie.entriesFrom(startKeyHash, limit).entrySet().stream()
-        .map(
-            entry -> {
-              final Optional<Address> address = getAccountTrieKeyPreimage(entry.getKey());
-              final AccountState account =
-                  deserializeAccount(
-                      address.orElse(Address.ZERO), Hash.wrap(entry.getKey()), entry.getValue());
-              return new StreamableAccount(address, account);
-            });
+//    return accountStateStore.entriesFrom(startKeyHash, limit).entrySet().stream()
+//        .map(
+//            entry -> {
+//              final Optional<Address> address = getAccountTrieKeyPreimage(entry.getKey());
+//              final AccountState account =
+//                  deserializeAccount(
+//                      address.orElse(Address.ZERO), Hash.wrap(entry.getKey()), entry.getValue());
+//              return new StreamableAccount(address, account);
+//            });
+      throw new UnsupportedOperationException();
   }
 
   @Override
@@ -196,42 +187,42 @@ public class DefaultMutableWorldState implements MutableWorldState {
 
   @Override
   public void persist(final BlockHeader blockHeader) {
-    final WorldStateStorage.Updater stateUpdater = worldStateStorage.updater();
-    // Store updated code
-    // TODO -> Adds/Removes code from the Account state
-    for (final Bytes code : updatedAccountCode.values()) {
-      stateUpdater.putCode(null, code);
-    }
-    // Commit account storage tries
-    // TODO -> VirtualMaps where we have to commit?
-    for (final MerklePatriciaTrie<Bytes32, Bytes> updatedStorage : updatedStorageTries.values()) {
-      updatedStorage.commit(
-          (location, hash, value) ->
-              stateUpdater.putAccountStorageTrieNode(null, location, hash, value));
-    }
-    // Commit account updates
-    // TODO we will commit the Account changes from here
-    accountStateTrie.commit(stateUpdater::putAccountStateTrieNode);
-
-    // Persist preimages
-    final WorldStatePreimageStorage.Updater preimageUpdater = preimageStorage.updater();
-    newStorageKeyPreimages.forEach(preimageUpdater::putStorageTrieKeyPreimage);
-    newAccountKeyPreimages.forEach(preimageUpdater::putAccountTrieKeyPreimage);
-
-    // Clear pending changes that we just flushed
-    updatedStorageTries.clear();
-    updatedAccountCode.clear();
-    newStorageKeyPreimages.clear();
-
-    // Push changes to underlying storage
-    preimageUpdater.commit();
-    stateUpdater.commit();
+//    final WorldStateStorage.Updater stateUpdater = worldStateStorage.updater();
+//    // Store updated code
+//    // TODO -> Adds/Removes code from the Account state
+//    for (final Bytes code : updatedAccountCode.values()) {
+//      stateUpdater.putCode(null, code);
+//    }
+//    // Commit account storage tries
+//    // TODO -> VirtualMaps where we have to commit?
+//    for (final MerklePatriciaTrie<Bytes32, Bytes> updatedStorage : updatedStorageTries.values()) {
+//      updatedStorage.commit(
+//              (location, hash, value) ->
+//                      stateUpdater.putAccountStorageTrieNode(null, location, hash, value));
+//    }
+//    // Commit account updates
+//    // TODO we will commit the Account changes from here
+//    accountStateTrie.commit(stateUpdater::putAccountStateTrieNode);
+//
+//    // Persist preimages
+//    final WorldStatePreimageStorage.Updater preimageUpdater = preimageStorage.updater();
+//    newStorageKeyPreimages.forEach(preimageUpdater::putStorageTrieKeyPreimage);
+//    newAccountKeyPreimages.forEach(preimageUpdater::putAccountTrieKeyPreimage);
+//
+//    // Clear pending changes that we just flushed
+//    updatedStorageTries.clear();
+//    updatedAccountCode.clear();
+//    newStorageKeyPreimages.clear();
+//
+//    // Push changes to underlying storage
+//    preimageUpdater.commit();
+//    stateUpdater.commit();
   }
 
-  private Optional<UInt256> getStorageTrieKeyPreimage(final Bytes32 trieKey) {
-    return Optional.ofNullable(newStorageKeyPreimages.get(trieKey))
-        .or(() -> preimageStorage.getStorageTrieKeyPreimage(trieKey));
-  }
+//  private Optional<UInt256> getStorageTrieKeyPreimage(final Bytes32 trieKey) {
+//    return Optional.ofNullable(newStorageKeyPreimages.get(trieKey))
+//        .or(() -> preimageStorage.getStorageTrieKeyPreimage(trieKey));
+//  }
 
   private static UInt256 convertToUInt256(final Bytes value) {
     // TODO: we could probably have an optimized method to decode a single scalar since it's used
@@ -240,10 +231,11 @@ public class DefaultMutableWorldState implements MutableWorldState {
     return in.readUInt256Scalar();
   }
 
-  private Optional<Address> getAccountTrieKeyPreimage(final Bytes32 trieKey) {
-    return Optional.ofNullable(newAccountKeyPreimages.get(trieKey))
-        .or(() -> preimageStorage.getAccountTrieKeyPreimage(trieKey));
-  }
+//  private Optional<Address> getAccountTrieKeyPreimage(final Bytes32 trieKey) {
+//    return Optional.ofNullable(newAccountKeyPreimages.get(trieKey))
+//        .or(() -> preimageStorage.getAccountTrieKeyPreimage(trieKey));
+//  }
+
   // An immutable class that represents an individual account as stored in
   // in the world state's underlying merkle patricia trie.
   protected class WorldStateAccount implements Account {
@@ -254,7 +246,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
     final StateTrieAccountValue accountValue;
 
     // Lazily initialized since we don't always access storage.
-    private volatile MerklePatriciaTrie<Bytes32, Bytes> storageTrie;
+    private volatile AccountStorageMap storageTrie;
 
     private WorldStateAccount(
         final Address address, final Hash addressHash, final StateTrieAccountValue accountValue) {
@@ -264,13 +256,15 @@ public class DefaultMutableWorldState implements MutableWorldState {
       this.accountValue = accountValue;
     }
 
-    private MerklePatriciaTrie<Bytes32, Bytes> storageTrie() {
-      final MerklePatriciaTrie<Bytes32, Bytes> updatedTrie = updatedStorageTries.get(address);
+    // TODO add new constructor?
+
+    private AccountStorageMap storageTrie() {
+      final AccountStorageMap updatedTrie = updatedStorageTries.get(address);
       if (updatedTrie != null) {
         storageTrie = updatedTrie;
       }
       if (storageTrie == null) {
-        storageTrie = newAccountStorageTrie(getStorageRoot());
+        storageTrie = newAccountStorageMap(address);
       }
       return storageTrie;
     }
@@ -310,7 +304,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
       if (codeHash.equals(Hash.EMPTY)) {
         return Bytes.EMPTY;
       }
-      return worldStateStorage.getCode(codeHash, null).orElse(Bytes.EMPTY);
+      return accountStateStore.getCode(address);
     }
 
     @Override
@@ -331,7 +325,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
     @Override
     public UInt256 getStorageValue(final UInt256 key) {
       return storageTrie()
-          .get(Hash.hash(key.toBytes()))
+          .get(key.toBytes())
           .map(DefaultMutableWorldState::convertToUInt256)
           .orElse(UInt256.ZERO);
     }
@@ -341,20 +335,22 @@ public class DefaultMutableWorldState implements MutableWorldState {
       return getStorageValue(key);
     }
 
+    // TODO we won't need this
     @Override
     public NavigableMap<Bytes32, AccountStorageEntry> storageEntriesFrom(
         final Bytes32 startKeyHash, final int limit) {
-      final NavigableMap<Bytes32, AccountStorageEntry> storageEntries = new TreeMap<>();
-      storageTrie()
-          .entriesFrom(startKeyHash, limit)
-          .forEach(
-              (key, value) -> {
-                final AccountStorageEntry entry =
-                    AccountStorageEntry.create(
-                        convertToUInt256(value), key, getStorageTrieKeyPreimage(key));
-                storageEntries.put(key, entry);
-              });
-      return storageEntries;
+//      final NavigableMap<Bytes32, AccountStorageEntry> storageEntries = new TreeMap<>();
+//      storageTrie()
+//          .entriesFrom(startKeyHash, limit)
+//          .forEach(
+//              (key, value) -> {
+//                final AccountStorageEntry entry =
+//                    AccountStorageEntry.create(
+//                        convertToUInt256(value), key, getStorageTrieKeyPreimage(key));
+//                storageEntries.put(key, entry);
+//              });
+//      return storageEntries;
+        throw new UnsupportedOperationException("Stream storage entries not supported");
     }
 
     @Override
@@ -382,11 +378,9 @@ public class DefaultMutableWorldState implements MutableWorldState {
     protected WorldStateAccount getForMutation(final Address address) {
       final DefaultMutableWorldState wrapped = wrappedWorldView();
       final Hash addressHash = Hash.hash(address);
-      return wrapped
-          .accountStateTrie
-          .get(addressHash)
-          .map(bytes -> wrapped.deserializeAccount(address, addressHash, bytes))
-          .orElse(null);
+      // TODO ugly fix
+      Account acc = wrapped.accountStateStore.get(address);
+      return wrapped.new WorldStateAccount(acc.getAddress(), addressHash, null);
     }
 
     @Override
@@ -410,35 +404,26 @@ public class DefaultMutableWorldState implements MutableWorldState {
       final DefaultMutableWorldState wrapped = wrappedWorldView();
 
       for (final Address address : getDeletedAccounts()) {
-        final Hash addressHash = Hash.hash(address);
-        wrapped.accountStateTrie.remove(addressHash);
-        wrapped.updatedStorageTries.remove(address);
-        wrapped.updatedAccountCode.remove(address);
+        wrapped.accountStateStore.remove(address);
       }
 
       for (final UpdateTrackingAccount<WorldStateAccount> updated : getUpdatedAccounts()) {
         final WorldStateAccount origin = updated.getWrappedAccount();
 
-        // Save the code in key-value storage ...
-        Hash codeHash = origin == null ? Hash.EMPTY : origin.getCodeHash();
+        // Save the code in storage ...
         if (updated.codeWasUpdated()) {
-          codeHash = Hash.hash(updated.getCode());
-          wrapped.updatedAccountCode.put(updated.getAddress(), updated.getCode());
+            wrapped.accountStateStore.putCode(updated.getAddress(), updated.getCode());
         }
         // ...and storage in the account trie first.
         final boolean freshState = origin == null || updated.getStorageWasCleared();
-        Hash storageRoot = freshState ? Hash.EMPTY_TRIE_HASH : origin.getStorageRoot();
         if (freshState) {
-          wrapped.updatedStorageTries.remove(updated.getAddress());
+            wrapped.accountStateStore.clearStorage(updated.getAddress());
         }
+
         final Map<UInt256, UInt256> updatedStorage = updated.getUpdatedStorage();
         if (!updatedStorage.isEmpty()) {
           // Apply any storage updates
-          final MerklePatriciaTrie<Bytes32, Bytes> storageTrie =
-              freshState
-                  ? wrapped.newAccountStorageTrie(Hash.EMPTY_TRIE_HASH)
-                  : origin.storageTrie();
-          wrapped.updatedStorageTries.put(updated.getAddress(), storageTrie);
+          final AccountStorageMap storageTrie = freshState ? wrapped.newAccountStorageMap(origin.getAddress()) : origin.storageTrie();
           final TreeSet<Map.Entry<UInt256, UInt256>> entries =
               new TreeSet<>(
                   Comparator.comparing(
@@ -447,30 +432,26 @@ public class DefaultMutableWorldState implements MutableWorldState {
 
           for (final Map.Entry<UInt256, UInt256> entry : entries) {
             final UInt256 value = entry.getValue();
-            final Hash keyHash = Hash.hash(entry.getKey().toBytes());
             if (value.isZero()) {
-              storageTrie.remove(keyHash);
+              storageTrie.remove(entry.getKey().toBytes());
             } else {
-              wrapped.newStorageKeyPreimages.put(keyHash, entry.getKey());
-              storageTrie.put(
-                  keyHash, RLP.encode(out -> out.writeBytes(entry.getValue().toMinimalBytes())));
+              storageTrie.put(entry.getKey().toBytes(), RLP.encode(out -> out.writeBytes(entry.getValue().toMinimalBytes())));
+              // TODO wrapped.newStorageKeyPreimages.put(keyHash, entry.getKey());
             }
           }
-          storageRoot = Hash.wrap(storageTrie.getRootHash());
+          // Commit any state changes
+          storageTrie.commit();
         }
 
-        // Save address preimage
-        wrapped.newAccountKeyPreimages.put(updated.getAddressHash(), updated.getAddress());
+        // TODO Save address preimage
+        // wrapped.newAccountKeyPreimages.put(updated.getAddressHash(), updated.getAddress());
         // Lastly, save the new account.
-        final Bytes account =
-            serializeAccount(
-                updated.getNonce(),
-                updated.getBalance(),
-                storageRoot,
-                codeHash,
-                updated.getVersion());
-        // TODO We will put directly the JavaClass instead of the bytes
-        wrapped.accountStateTrie.put(updated.getAddressHash(), account);
+        wrapped.accountStateStore.put(updated.getAddress(), updated.getNonce(), updated.getBalance());
+        // Commit account state changes
+        wrapped.accountStateStore.commit();
+
+        // Clear structures
+        wrapped.updatedStorageTries.clear();
       }
     }
   }
