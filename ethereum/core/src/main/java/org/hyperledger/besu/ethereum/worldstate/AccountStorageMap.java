@@ -1,60 +1,53 @@
-package org.hyperledger.besu.ethereum.worldstate;/*
- * ‌
- * Hedera Services Node
- * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/*
+ * Copyright ConsenSys AG.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  */
+
+package org.hyperledger.besu.ethereum.worldstate;
+
+import java.util.Optional;
 
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 
-import java.util.Optional;
-
-/**
- * Main interface for interacting with the Storage map of a given account
- */
+/** Main interface for interacting with the Storage map of a given account */
 public interface AccountStorageMap {
 
-	/**
-	 * Returns an {@code Optional} of value mapped to the key if it exists; otherwise empty.
-	 *
-	 * @param key The key for the value.
-	 * @return an {@code Optional} of value mapped to the key if it exists; otherwise empty
-	 */
-	Optional<Bytes> get(Bytes32 key);
+  /**
+   * Returns an {@code Optional} of value mapped to the key if it exists; otherwise empty.
+   *
+   * @param key The key for the value.
+   * @return an {@code Optional} of value mapped to the key if it exists; otherwise empty
+   */
+  Optional<Bytes> get(Bytes32 key);
 
+  /**
+   * Updates the value mapped to the specified key, creating the mapping if one does not already
+   * exist.
+   *
+   * @param key The key that corresponds to the value to be updated.
+   * @param value The value to associate the key with.
+   */
+  void put(Bytes32 key, Bytes value);
 
-	/**
-	 * Updates the value mapped to the specified key, creating the mapping if one does not already
-	 * exist.
-	 *
-	 * @param key The key that corresponds to the value to be updated.
-	 * @param value The value to associate the key with.
-	 */
-	void put(Bytes32 key, Bytes value);
+  /**
+   * Deletes the value mapped to the specified key, if such a value exists (Optional operation).
+   *
+   * @param key The key of the value to be deleted.
+   */
+  void remove(Bytes32 key);
 
-	/**
-	 * Deletes the value mapped to the specified key, if such a value exists (Optional operation).
-	 *
-	 * @param key The key of the value to be deleted.
-	 */
-	void remove(Bytes32 key);
-
-	/**
-	 * Commits any pending changes to the underlying storage.
-	 */
-	void commit();
+  /** Commits any pending changes to the underlying storage. */
+  void commit();
 }

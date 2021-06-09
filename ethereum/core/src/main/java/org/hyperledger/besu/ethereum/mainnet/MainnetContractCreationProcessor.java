@@ -110,7 +110,8 @@ public class MainnetContractCreationProcessor extends AbstractMessageProcessor {
       LOG.trace("Executing contract-creation");
     }
     try {
-      // Similar to Model objects after refactoring. We should implement "pending" state changes for the MutableAccount (?)
+      // Similar to Model objects after refactoring. We should implement "pending" state changes for
+      // the MutableAccount (?)
       final MutableAccount sender = frame.getWorldState().getSenderAccount(frame).getMutable();
       sender.decrementBalance(frame.getValue());
 
