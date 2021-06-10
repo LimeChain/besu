@@ -298,7 +298,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
     protected WorldStateAccount getForMutation(final Address address) {
       final DefaultMutableWorldState wrapped = wrappedWorldView();
       Account acc = wrapped.accountStateStore.get(address);
-      return wrapped.new WorldStateAccount(acc.getAddress(), acc.getNonce(), acc.getBalance());
+      return acc == null ? null : wrapped.new WorldStateAccount(acc.getAddress(), acc.getNonce(), acc.getBalance());
     }
 
     @Override

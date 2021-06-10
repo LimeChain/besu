@@ -1273,7 +1273,7 @@ public class MessageFrame {
       checkState(depth > -1, "Missing message frame depth");
       checkState(completer != null, "Missing message frame completer");
       checkState(miningBeneficiary != null, "Missing mining beneficiary");
-      checkState(blockHashLookup != null, "Missing block hash lookup");
+//      checkState(blockHashLookup != null, "Missing block hash lookup");
       checkState(isPersistingPrivateState != null, "Missing isPersistingPrivateState");
       checkState(contractAccountVersion != -1, "Missing contractAccountVersion");
     }

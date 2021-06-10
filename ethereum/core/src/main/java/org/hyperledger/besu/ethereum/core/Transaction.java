@@ -505,10 +505,7 @@ public class Transaction implements org.hyperledger.besu.plugin.data.Transaction
    */
   @Override
   public Hash getHash() {
-    if (hash == null) {
-      hash = Hash.hash(TransactionEncoder.encodeOpaqueBytes(this));
-    }
-    return hash;
+    return Hash.EMPTY;
   }
 
   /**

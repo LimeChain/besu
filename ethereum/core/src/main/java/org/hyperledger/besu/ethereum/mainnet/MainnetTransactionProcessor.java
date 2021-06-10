@@ -274,13 +274,12 @@ public class MainnetTransactionProcessor {
       }
 
       final MutableAccount senderMutableAccount = sender.getMutable();
-      // No need to increment nonce
-      //      final long previousNonce = senderMutableAccount.incrementNonce();
-      //      LOG.trace(
-      //          "Incremented sender {} nonce ({} -> {})",
-      //          senderAddress,
-      //          previousNonce,
-      //          sender.getNonce());
+      final long previousNonce = senderMutableAccount.incrementNonce();
+      LOG.trace(
+          "Incremented sender {} nonce ({} -> {})",
+          senderAddress,
+          previousNonce,
+          sender.getNonce());
       final Wei transactionGasPrice =
           transactionPriceCalculator.price(transaction, blockHeader.getBaseFee());
 
@@ -330,6 +329,7 @@ public class MainnetTransactionProcessor {
 
       final MessageFrame initialFrame;
       if (transaction.isContractCreation()) {
+        // TODO we have to refactor this logic
         final Address contractAddress =
             Address.contractAddress(senderAddress, senderMutableAccount.getNonce() - 1L);
 
