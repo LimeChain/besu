@@ -330,8 +330,7 @@ public class MainnetTransactionProcessor {
       final MessageFrame initialFrame;
       if (transaction.isContractCreation()) {
         // TODO we have to refactor this logic
-        final Address contractAddress =
-            Address.contractAddress(senderAddress, senderMutableAccount.getNonce() - 1L);
+        final Address contractAddress = transaction.contractAddress().get();
 
         initialFrame =
             commonMessageFrameBuilder

@@ -82,6 +82,8 @@ public class Transaction implements org.hyperledger.besu.plugin.data.Transaction
 
   private final Optional<BigInteger> v;
 
+  private Address contractAddress;
+
   // Caches a "hash" of a portion of the transaction used for sender recovery.
   // Note that this hash does not include the transaction signature so it does not
   // fully identify the transaction (use the result of the {@code hash()} for that).
@@ -205,6 +207,51 @@ public class Transaction implements org.hyperledger.besu.plugin.data.Transaction
         sender,
         chainId,
         v);
+  }
+
+  /**
+   * Instantiates a transaction instance.
+   *
+   * @param nonce the nonce
+   * @param gasPrice the gas price
+   * @param gasLimit the gas limit
+   * @param to the transaction recipient
+   * @param value the value being transferred to the recipient
+   * @param signature the signature
+   * @param payload the payload
+   * @param sender the transaction sender
+   * @param chainId the chain id to apply the transaction to
+   * @param contractAddress the contract address
+   *     <p>The {@code to} will be an {@code Optional.empty()} for a contract creation transaction;
+   *     otherwise it should contain an address.
+   *     <p>The {@code chainId} must be greater than 0 to be applied to a specific chain; otherwise
+   *     it will default to any chain.
+   */
+  public Transaction(
+      final long nonce,
+      final Wei gasPrice,
+      final long gasLimit,
+      final Optional<Address> to,
+      final Wei value,
+      final SECPSignature signature,
+      final Bytes payload,
+      final Address sender,
+      final Optional<BigInteger> chainId,
+      final Address contractAddress) {
+    this(
+        nonce,
+        gasPrice,
+        null,
+        null,
+        gasLimit,
+        to,
+        value,
+        signature,
+        payload,
+        sender,
+        chainId,
+        Optional.empty());
+    this.contractAddress = contractAddress;
   }
 
   /**
@@ -759,7 +806,7 @@ public class Transaction implements org.hyperledger.besu.plugin.data.Transaction
 
   public Optional<Address> contractAddress() {
     if (isContractCreation()) {
-      return Optional.of(Address.contractAddress(getSender(), getNonce()));
+      return Optional.of(contractAddress);
     }
     return Optional.empty();
   }
