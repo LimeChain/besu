@@ -362,6 +362,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
         }
 
         // Lastly, save the new account.
+        // TODO we must not allow for arbitrary contract creation. If we do `get` for account and it returns `null` we must halt the execution and revert
         wrapped.accountStateStore.put(
             updated.getAddress(), updated.getNonce(), updated.getBalance());
         // Commit account state changes
