@@ -50,11 +50,6 @@ public class DefaultMutableWorldState implements MutableWorldState {
   private final Map<Address, AccountStorageMap> updatedStorageTries = new HashMap<>();
   private final Map<Address, Bytes> updatedAccountCode = new HashMap<>();
 
-  // TODO Research the preimages
-  //  private final Map<Bytes32, UInt256> newStorageKeyPreimages = new HashMap<>();
-  //  private final Map<Bytes32, Address> newAccountKeyPreimages = new HashMap<>();
-
-  // TODO use genesis for now? (meaning no NODE_HASH)
   public DefaultMutableWorldState(
       final WorldStateStorage storage, final WorldStatePreimageStorage preimageStorage) {
     this(MerklePatriciaTrie.EMPTY_TRIE_NODE_HASH, storage, preimageStorage);
@@ -356,6 +351,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
             if (value.isZero()) {
               storageTrie.remove(entry.getKey().toBytes());
             } else {
+              // Use UInt256 directly
               storageTrie.put(
                   entry.getKey().toBytes(),
                   RLP.encode(out -> out.writeBytes(entry.getValue().toMinimalBytes())));

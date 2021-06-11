@@ -46,6 +46,7 @@ public interface AccountStorageMap {
    *
    * @param key The key of the value to be deleted.
    */
+  // it is implemented in a new version. We can ignore for now
   void remove(Bytes32 key);
 
   /** Commits any pending changes to the underlying storage. */
