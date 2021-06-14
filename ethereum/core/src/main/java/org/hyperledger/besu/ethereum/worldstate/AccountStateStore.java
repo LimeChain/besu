@@ -41,8 +41,8 @@ public interface AccountStateStore {
   AccountStorageMap newStorageMap(Address address);
 
   /**
-   * Updates the provided properties for a given Account
-   * The specified account might not exist in the Hedera Ledger. If that is the case, the Transaction MUST revert.
+   * Updates the provided properties for a given Account The specified account might not exist in
+   * the Hedera Ledger. If that is the case, the Transaction MUST revert.
    *
    * @param address the address to update
    * @param nonce the new nonce of the account
@@ -77,8 +77,8 @@ public interface AccountStateStore {
   void remove(Address address);
 
   /**
-   * Clears the storage for a given address in state.
-   * The method is called when new contract is deployed or already existing contract is destroyed
+   * Clears the storage for a given address in state. The method is called when new contract is
+   * deployed or already existing contract is destroyed
    *
    * @param address the address to get their storage cleared
    */
