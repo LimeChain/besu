@@ -79,6 +79,7 @@ public class EVM {
         () -> {
           OperationResult result;
           try {
+            System.out.println(frame.getCurrentOperation().getName());
             result = frame.getCurrentOperation().execute(frame, this);
           } catch (final OverflowException oe) {
             result = OVERFLOW_RESPONSE;

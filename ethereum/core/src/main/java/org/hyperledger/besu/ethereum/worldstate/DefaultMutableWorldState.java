@@ -226,11 +226,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
       if (updatedCode != null) {
         return updatedCode;
       }
-      // No code is common, save the KV-store lookup.
-      final Hash codeHash = getCodeHash();
-      if (codeHash.equals(Hash.EMPTY)) {
-        return Bytes.EMPTY;
-      }
+
       return accountStateStore.getCode(address);
     }
 
@@ -366,12 +362,13 @@ public class DefaultMutableWorldState implements MutableWorldState {
         // returns `null` we must halt the execution and revert
         wrapped.accountStateStore.put(
             updated.getAddress(), updated.getNonce(), updated.getBalance());
-        // Commit account state changes
-        wrapped.accountStateStore.commit();
-
-        // Clear structures
-        wrapped.updatedStorageTries.clear();
       }
+
+      // Commit account state changes
+      wrapped.accountStateStore.commit();
+
+      // Clear structures
+      wrapped.updatedStorageTries.clear();
     }
   }
 }
