@@ -162,10 +162,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
   }
 
   private static UInt256 convertToUInt256(final Bytes value) {
-    // TODO: we could probably have an optimized method to decode a single scalar since it's used
-    // pretty often.
-    final RLPInput in = RLP.input(value);
-    return in.readUInt256Scalar();
+    return UInt256.fromBytes(value);
   }
 
   // An immutable class that represents an individual account as stored in
@@ -348,9 +345,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
               storageTrie.remove(entry.getKey().toBytes());
             } else {
               // Use UInt256 directly
-              storageTrie.put(
-                  entry.getKey().toBytes(),
-                  RLP.encode(out -> out.writeBytes(entry.getValue().toMinimalBytes())));
+                storageTrie.put(entry.getKey().toBytes(), value.toBytes());
             }
           }
           // Commit any state changes
