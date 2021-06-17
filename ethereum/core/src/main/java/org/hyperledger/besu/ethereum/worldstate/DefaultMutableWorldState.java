@@ -25,8 +25,6 @@ import org.hyperledger.besu.ethereum.core.UpdateTrackingAccount;
 import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.core.WorldState;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
-import org.hyperledger.besu.ethereum.rlp.RLP;
-import org.hyperledger.besu.ethereum.rlp.RLPInput;
 import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 
 import java.util.ArrayList;
@@ -345,7 +343,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
               storageTrie.remove(entry.getKey().toBytes());
             } else {
               // Use UInt256 directly
-                storageTrie.put(entry.getKey().toBytes(), value.toBytes());
+              storageTrie.put(entry.getKey().toBytes(), value.toBytes());
             }
           }
           // Commit any state changes
