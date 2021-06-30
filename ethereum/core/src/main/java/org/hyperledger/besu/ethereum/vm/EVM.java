@@ -16,7 +16,6 @@ package org.hyperledger.besu.ethereum.vm;
 
 import static org.apache.logging.log4j.LogManager.getLogger;
 
-import org.hyperledger.besu.ethereum.core.Gas;
 import org.hyperledger.besu.ethereum.vm.FixedStack.OverflowException;
 import org.hyperledger.besu.ethereum.vm.FixedStack.UnderflowException;
 import org.hyperledger.besu.ethereum.vm.MessageFrame.State;
@@ -86,7 +85,7 @@ public class EVM {
             result = UNDERFLOW_RESPONSE;
           }
           frame.setGasCost(result.getGasCost());
-          logState(frame, result.getGasCost().orElse(Gas.ZERO));
+          //          logState(frame, result.getGasCost().orElse(Gas.ZERO));
           final Optional<ExceptionalHaltReason> haltReason = result.getHaltReason();
           if (haltReason.isPresent()) {
             LOG.trace("MessageFrame evaluation halted because of {}", haltReason.get());
@@ -107,23 +106,6 @@ public class EVM {
       final int currentPC = frame.getPC();
       final int opSize = operation.getOpSize();
       frame.setPC(currentPC + opSize);
-    }
-  }
-
-  private static void logState(final MessageFrame frame, final Gas currentGasCost) {
-    if (LOG.isTraceEnabled()) {
-      final StringBuilder builder = new StringBuilder();
-      builder.append("Depth: ").append(frame.getMessageStackDepth()).append("\n");
-      builder.append("Operation: ").append(frame.getCurrentOperation().getName()).append("\n");
-      builder.append("PC: ").append(frame.getPC()).append("\n");
-      builder.append("Gas cost: ").append(currentGasCost).append("\n");
-      builder.append("Gas Remaining: ").append(frame.getRemainingGas()).append("\n");
-      builder.append("Depth: ").append(frame.getMessageStackDepth()).append("\n");
-      builder.append("Stack:");
-      for (int i = 0; i < frame.stackSize(); ++i) {
-        builder.append("\n\t").append(i).append(" ").append(frame.getStackItem(i));
-      }
-      LOG.trace(builder.toString());
     }
   }
 
