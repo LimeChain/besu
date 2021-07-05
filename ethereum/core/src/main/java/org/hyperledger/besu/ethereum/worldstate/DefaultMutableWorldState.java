@@ -159,10 +159,6 @@ public class DefaultMutableWorldState implements MutableWorldState {
     //    stateUpdater.commit();
   }
 
-  private static UInt256 convertToUInt256(final Bytes value) {
-    return UInt256.fromBytes(value);
-  }
-
   // An immutable class that represents an individual account as stored in
   // in the world state's underlying merkle patricia trie.
   public class WorldStateAccount implements Account {
@@ -242,10 +238,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
 
     @Override
     public UInt256 getStorageValue(final UInt256 key) {
-      return storageTrie()
-          .get(key.toBytes())
-          .map(DefaultMutableWorldState::convertToUInt256)
-          .orElse(UInt256.ZERO);
+      return storageTrie().get(key).orElse(UInt256.ZERO);
     }
 
     @Override
@@ -340,14 +333,12 @@ public class DefaultMutableWorldState implements MutableWorldState {
           for (final Map.Entry<UInt256, UInt256> entry : entries) {
             final UInt256 value = entry.getValue();
             if (value.isZero()) {
-              storageTrie.remove(entry.getKey().toBytes());
+              storageTrie.remove(entry.getKey());
             } else {
               // Use UInt256 directly
-              storageTrie.put(entry.getKey().toBytes(), value.toBytes());
+              storageTrie.put(entry.getKey(), value);
             }
           }
-          // Commit any state changes
-          storageTrie.commit();
         }
 
         // Lastly, save the new account.

@@ -18,8 +18,7 @@ package org.hyperledger.besu.ethereum.worldstate;
 
 import java.util.Optional;
 
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
+import org.apache.tuweni.units.bigints.UInt256;
 
 /** Main interface for interacting with the Storage map of a given account */
 public interface AccountStorageMap {
@@ -30,7 +29,7 @@ public interface AccountStorageMap {
    * @param key The key for the value.
    * @return an {@code Optional} of value mapped to the key if it exists; otherwise empty
    */
-  Optional<Bytes> get(Bytes32 key);
+  Optional<UInt256> get(UInt256 key);
 
   /**
    * Updates the value mapped to the specified key, creating the mapping if one does not already
@@ -39,7 +38,7 @@ public interface AccountStorageMap {
    * @param key The key that corresponds to the value to be updated.
    * @param value The value to associate the key with.
    */
-  void put(Bytes32 key, Bytes value);
+  void put(UInt256 key, UInt256 value);
 
   /**
    * Deletes the value mapped to the specified key, if such a value exists (Optional operation).
@@ -47,8 +46,5 @@ public interface AccountStorageMap {
    * @param key The key of the value to be deleted.
    */
   // it is implemented in a new version. We can ignore for now
-  void remove(Bytes32 key);
-
-  /** Commits any pending changes to the underlying storage. */
-  void commit();
+  void remove(UInt256 key);
 }
