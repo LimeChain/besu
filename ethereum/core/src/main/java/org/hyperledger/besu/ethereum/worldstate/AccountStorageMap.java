@@ -16,27 +16,29 @@
 
 package org.hyperledger.besu.ethereum.worldstate;
 
-import java.util.Optional;
-
 import org.apache.tuweni.units.bigints.UInt256;
 
-/** Main interface for interacting with the Storage map of a given account */
+import java.util.Optional;
+
+/**
+ * Interface for interacting with the Storage map of a given account instance
+ */
 public interface AccountStorageMap {
 
   /**
-   * Returns an {@code Optional} of value mapped to the key if it exists; otherwise empty.
+   * Accesses and retrieves the contract value mapped to the specified key
    *
    * @param key The key for the value.
-   * @return an {@code Optional} of value mapped to the key if it exists; otherwise empty
+   * @return {@link Optional} {@link UInt256} value mapped to the key if it exists; otherwise empty
    */
   Optional<UInt256> get(UInt256 key);
 
   /**
    * Updates the value mapped to the specified key, creating the mapping if one does not already
-   * exist.
+   * exist
    *
    * @param key The key that corresponds to the value to be updated.
-   * @param value The value to associate the key with.
+   * @param value The value to associate the key with
    */
   void put(UInt256 key, UInt256 value);
 
@@ -45,6 +47,5 @@ public interface AccountStorageMap {
    *
    * @param key The key of the value to be deleted.
    */
-  // it is implemented in a new version. We can ignore for now
   void remove(UInt256 key);
 }

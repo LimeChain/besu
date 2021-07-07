@@ -14,6 +14,9 @@
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.bytes.Bytes32;
+import org.apache.tuweni.units.bigints.UInt256;
 import org.hyperledger.besu.ethereum.core.AbstractWorldUpdater;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountStorageEntry;
@@ -35,12 +38,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeSet;
-import java.util.function.Function;
 import java.util.stream.Stream;
-
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
-import org.apache.tuweni.units.bigints.UInt256;
 
 public class DefaultMutableWorldState implements MutableWorldState {
 
@@ -126,37 +124,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
 
   @Override
   public void persist(final BlockHeader blockHeader) {
-    //    final WorldStateStorage.Updater stateUpdater = worldStateStorage.updater();
-    //    // Store updated code
-    //    // TODO -> Adds/Removes code from the Account state
-    //    for (final Bytes code : updatedAccountCode.values()) {
-    //      stateUpdater.putCode(null, code);
-    //    }
-    //    // Commit account storage tries
-    //    // TODO -> VirtualMaps where we have to commit?
-    //    for (final MerklePatriciaTrie<Bytes32, Bytes> updatedStorage :
-    // updatedStorageTries.values()) {
-    //      updatedStorage.commit(
-    //              (location, hash, value) ->
-    //                      stateUpdater.putAccountStorageTrieNode(null, location, hash, value));
-    //    }
-    //    // Commit account updates
-    //    // TODO we will commit the Account changes from here
-    //    accountStateTrie.commit(stateUpdater::putAccountStateTrieNode);
-    //
-    //    // Persist preimages
-    //    final WorldStatePreimageStorage.Updater preimageUpdater = preimageStorage.updater();
-    //    newStorageKeyPreimages.forEach(preimageUpdater::putStorageTrieKeyPreimage);
-    //    newAccountKeyPreimages.forEach(preimageUpdater::putAccountTrieKeyPreimage);
-    //
-    //    // Clear pending changes that we just flushed
-    //    updatedStorageTries.clear();
-    //    updatedAccountCode.clear();
-    //    newStorageKeyPreimages.clear();
-    //
-    //    // Push changes to underlying storage
-    //    preimageUpdater.commit();
-    //    stateUpdater.commit();
+    throw new UnsupportedOperationException();
   }
 
   // An immutable class that represents an individual account as stored in
@@ -324,10 +292,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
           // Apply any storage updates
           final AccountStorageMap storageTrie =
               freshState ? wrapped.newAccountStorageMap(origin.getAddress()) : origin.storageTrie();
-          final TreeSet<Map.Entry<UInt256, UInt256>> entries =
-              new TreeSet<>(
-                  Comparator.comparing(
-                      (Function<Map.Entry<UInt256, UInt256>, UInt256>) Map.Entry::getKey));
+          final TreeSet<Map.Entry<UInt256, UInt256>> entries = new TreeSet<>(Comparator.comparing(Map.Entry::getKey));
           entries.addAll(updatedStorage.entrySet());
 
           for (final Map.Entry<UInt256, UInt256> entry : entries) {
@@ -335,7 +300,6 @@ public class DefaultMutableWorldState implements MutableWorldState {
             if (value.isZero()) {
               storageTrie.remove(entry.getKey());
             } else {
-              // Use UInt256 directly
               storageTrie.put(entry.getKey(), value);
             }
           }
