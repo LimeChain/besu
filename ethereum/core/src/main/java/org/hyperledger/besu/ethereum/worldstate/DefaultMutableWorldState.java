@@ -14,9 +14,6 @@
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
-import org.apache.tuweni.units.bigints.UInt256;
 import org.hyperledger.besu.ethereum.core.AbstractWorldUpdater;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountStorageEntry;
@@ -39,6 +36,10 @@ import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeSet;
 import java.util.stream.Stream;
+
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.bytes.Bytes32;
+import org.apache.tuweni.units.bigints.UInt256;
 
 public class DefaultMutableWorldState implements MutableWorldState {
 
@@ -292,7 +293,8 @@ public class DefaultMutableWorldState implements MutableWorldState {
           // Apply any storage updates
           final AccountStorageMap storageTrie =
               freshState ? wrapped.newAccountStorageMap(origin.getAddress()) : origin.storageTrie();
-          final TreeSet<Map.Entry<UInt256, UInt256>> entries = new TreeSet<>(Comparator.comparing(Map.Entry::getKey));
+          final TreeSet<Map.Entry<UInt256, UInt256>> entries =
+              new TreeSet<>(Comparator.comparing(Map.Entry::getKey));
           entries.addAll(updatedStorage.entrySet());
 
           for (final Map.Entry<UInt256, UInt256> entry : entries) {

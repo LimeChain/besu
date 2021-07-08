@@ -16,13 +16,11 @@
 
 package org.hyperledger.besu.ethereum.worldstate;
 
-import org.apache.tuweni.units.bigints.UInt256;
-
 import java.util.Optional;
 
-/**
- * Interface for interacting with the Storage map of a given account instance
- */
+import org.apache.tuweni.units.bigints.UInt256;
+
+/** Interface for interacting with the Storage map of a given account instance */
 public interface AccountStorageMap {
 
   /**
