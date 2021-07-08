@@ -190,6 +190,39 @@ public class MainnetTransactionProcessor {
    * @param transaction The transaction to process
    * @param operationTracer The tracer to record results of each EVM operation
    * @param miningBeneficiary The address which is to receive the transaction fee
+   * @param isPersistingPrivateState Whether the resulting private state will be persisted
+   * @return the transaction result
+   */
+  public TransactionProcessingResult processTransaction(
+      final Blockchain blockchain,
+      final WorldUpdater worldState,
+      final ProcessableBlockHeader blockHeader,
+      final Transaction transaction,
+      final Address miningBeneficiary,
+      final OperationTracer operationTracer,
+      final Boolean isPersistingPrivateState) {
+    return processTransaction(
+        blockchain,
+        worldState,
+        blockHeader,
+        transaction,
+        miningBeneficiary,
+        operationTracer,
+        null,
+        isPersistingPrivateState,
+        ImmutableTransactionValidationParams.builder().build(),
+        null);
+  }
+
+  /**
+   * Applies a transaction to the current system state.
+   *
+   * @param blockchain The current blockchain
+   * @param worldState The current world state
+   * @param blockHeader The current block header
+   * @param transaction The transaction to process
+   * @param operationTracer The tracer to record results of each EVM operation
+   * @param miningBeneficiary The address which is to receive the transaction fee
    * @param blockHashLookup The {@link BlockHashLookup} to use for BLOCKHASH operations
    * @param isPersistingPrivateState Whether the resulting private state will be persisted
    * @param transactionValidationParams The transaction validation parameters to use
