@@ -110,7 +110,7 @@ public abstract class AbstractMessageProcessor {
     clearAccumulatedStateBesidesGasAndOutput(frame);
     frame.clearGasRemaining();
     frame.clearOutputData();
-    frame.setState(MessageFrame.State.COMPLETED_FAILED);
+    //    frame.setState(MessageFrame.State.COMPLETED_FAILED);
   }
 
   /**
@@ -177,6 +177,7 @@ public abstract class AbstractMessageProcessor {
 
     if (frame.getState() == MessageFrame.State.EXCEPTIONAL_HALT) {
       exceptionalHalt(frame);
+      completedFailed(frame);
     }
 
     if (frame.getState() == MessageFrame.State.REVERT) {

@@ -314,15 +314,11 @@ public class DefaultMutableWorldState implements MutableWorldState {
             updated.getAddress(), updated.getNonce(), updated.getBalance());
       }
 
-      try {
-        // Commit account state changes
-        wrapped.accountStateStore.commit();
-      } catch (Exception e) {
-        throw e;
-      } finally {
-        // Clear structures
-        wrapped.updatedStorageTries.clear();
-      }
+      // Commit account state changes
+      wrapped.accountStateStore.commit();
+
+      // Clear structures
+      wrapped.updatedStorageTries.clear();
     }
   }
 }
