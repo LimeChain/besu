@@ -457,18 +457,13 @@ public class MainnetTransactionProcessor {
             refunded.toLong(),
             initialFrame.getOutputData(),
             validationResult);
-      } else if (initialFrame.getState() == MessageFrame.State.EXCEPTIONAL_HALT) {
-        return TransactionProcessingResult.exceptionalHalt(
-            gasUsedByTransaction.toLong(),
-            refunded.toLong(),
-            validationResult,
-            initialFrame.getExceptionalHaltReason());
       } else {
         return TransactionProcessingResult.failed(
             gasUsedByTransaction.toLong(),
             refunded.toLong(),
             validationResult,
-            initialFrame.getRevertReason());
+            initialFrame.getRevertReason(),
+            initialFrame.getExceptionalHaltReason());
       }
     } catch (final RuntimeException re) {
       LOG.error("Critical Exception Processing Transaction", re);

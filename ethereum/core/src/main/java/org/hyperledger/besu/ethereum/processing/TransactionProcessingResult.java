@@ -37,10 +37,7 @@ public class TransactionProcessingResult {
     SUCCESSFUL,
 
     /** The transaction failed to be completely processed. */
-    FAILED,
-
-    /** The transaction encountered an exceptional halt. */
-    EXCEPTIONAL_HALT
+    FAILED
   }
 
   private final Status status;
@@ -78,19 +75,20 @@ public class TransactionProcessingResult {
         revertReason);
   }
 
-  public static TransactionProcessingResult exceptionalHalt(
+  public static TransactionProcessingResult failed(
       final long gasUsedByTransaction,
       final long gasRemaining,
       final ValidationResult<TransactionInvalidReason> validationResult,
+      final Optional<Bytes> revertReason,
       final Optional<ExceptionalHaltReason> exceptionalHaltReason) {
     return new TransactionProcessingResult(
-        Status.EXCEPTIONAL_HALT,
+        Status.FAILED,
         new ArrayList<>(),
         gasUsedByTransaction,
         gasRemaining,
         Bytes.EMPTY,
         validationResult,
-        Optional.empty(),
+        revertReason,
         exceptionalHaltReason);
   }
 
@@ -137,15 +135,13 @@ public class TransactionProcessingResult {
       final ValidationResult<TransactionInvalidReason> validationResult,
       final Optional<Bytes> revertReason,
       final Optional<ExceptionalHaltReason> exceptionalHaltReason) {
-    //    this(status, logs, estimateGasUsedByTransaction, gasRemaining, output, validationResult,
-    // revertReason);
     this.status = status;
     this.logs = logs;
     this.estimateGasUsedByTransaction = estimateGasUsedByTransaction;
     this.gasRemaining = gasRemaining;
     this.output = output;
     this.validationResult = validationResult;
-    this.revertReason = Optional.empty();
+    this.revertReason = revertReason;
     this.exceptionalHaltReason = exceptionalHaltReason;
   }
 
