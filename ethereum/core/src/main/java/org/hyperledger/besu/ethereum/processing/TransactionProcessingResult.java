@@ -57,7 +57,14 @@ public class TransactionProcessingResult {
   public static TransactionProcessingResult invalid(
       final ValidationResult<TransactionInvalidReason> validationResult) {
     return new TransactionProcessingResult(
-        Status.INVALID, new ArrayList<>(), -1, -1, Bytes.EMPTY, validationResult, Optional.empty());
+        Status.INVALID,
+        new ArrayList<>(),
+        -1,
+        -1,
+        Bytes.EMPTY,
+        validationResult,
+        Optional.empty(),
+        Optional.empty());
   }
 
   public static TransactionProcessingResult failed(
@@ -72,7 +79,8 @@ public class TransactionProcessingResult {
         gasRemaining,
         Bytes.EMPTY,
         validationResult,
-        revertReason);
+        revertReason,
+        Optional.empty());
   }
 
   public static TransactionProcessingResult failed(
@@ -105,25 +113,8 @@ public class TransactionProcessingResult {
         gasRemaining,
         output,
         validationResult,
+        Optional.empty(),
         Optional.empty());
-  }
-
-  public TransactionProcessingResult(
-      final Status status,
-      final List<Log> logs,
-      final long estimateGasUsedByTransaction,
-      final long gasRemaining,
-      final Bytes output,
-      final ValidationResult<TransactionInvalidReason> validationResult,
-      final Optional<Bytes> revertReason) {
-    this.status = status;
-    this.logs = logs;
-    this.estimateGasUsedByTransaction = estimateGasUsedByTransaction;
-    this.gasRemaining = gasRemaining;
-    this.output = output;
-    this.validationResult = validationResult;
-    this.revertReason = revertReason;
-    this.exceptionalHaltReason = Optional.empty();
   }
 
   public TransactionProcessingResult(
