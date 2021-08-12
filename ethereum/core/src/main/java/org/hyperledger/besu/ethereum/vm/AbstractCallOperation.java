@@ -158,6 +158,12 @@ public abstract class AbstractCallOperation extends AbstractOperation {
       return UNDERFLOW_RESPONSE;
     }
 
+    if (frame.getWorldState().get(address(frame)) == null
+        || frame.getWorldState().get(to(frame)) == null) {
+      return new OperationResult(
+          Optional.of(cost(frame)), Optional.of(ExceptionalHaltReason.INVALID_SOLIDITY_ADDRESS));
+    }
+
     final Gas cost = cost(frame);
     final Optional<Gas> optionalCost = Optional.ofNullable(cost);
     if (cost != null) {

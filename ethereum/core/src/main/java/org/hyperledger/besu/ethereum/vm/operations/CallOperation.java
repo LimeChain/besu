@@ -119,10 +119,6 @@ public class CallOperation extends AbstractCallOperation {
 
   @Override
   public OperationResult execute(final MessageFrame frame, final EVM evm) {
-    if (frame.getWorldState().get(address(frame)) == null) {
-      return new OperationResult(
-          Optional.of(cost(frame)), Optional.of(ExceptionalHaltReason.INVALID_SOLIDITY_ADDRESS));
-    }
     if (frame.isStatic() && !value(frame).isZero()) {
       return new OperationResult(
           Optional.of(cost(frame)), Optional.of(ExceptionalHaltReason.ILLEGAL_STATE_CHANGE));
