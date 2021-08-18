@@ -501,7 +501,8 @@ public class MainnetTransactionProcessor {
             gasUsedByTransaction.toLong(),
             refunded.toLong(),
             validationResult,
-            initialFrame.getRevertReason());
+            initialFrame.getRevertReason(),
+            initialFrame.getExceptionalHaltReason());
       }
     } catch (final RuntimeException re) {
       LOG.error("Critical Exception Processing Transaction", re);

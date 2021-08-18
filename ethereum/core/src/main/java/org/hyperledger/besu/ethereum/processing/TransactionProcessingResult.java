@@ -17,6 +17,7 @@ package org.hyperledger.besu.ethereum.processing;
 import org.hyperledger.besu.ethereum.core.Log;
 import org.hyperledger.besu.ethereum.mainnet.ValidationResult;
 import org.hyperledger.besu.ethereum.transaction.TransactionInvalidReason;
+import org.hyperledger.besu.ethereum.vm.ExceptionalHaltReason;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,11 +52,19 @@ public class TransactionProcessingResult {
 
   private final ValidationResult<TransactionInvalidReason> validationResult;
   private final Optional<Bytes> revertReason;
+  private final Optional<ExceptionalHaltReason> exceptionalHaltReason;
 
   public static TransactionProcessingResult invalid(
       final ValidationResult<TransactionInvalidReason> validationResult) {
     return new TransactionProcessingResult(
-        Status.INVALID, new ArrayList<>(), -1, -1, Bytes.EMPTY, validationResult, Optional.empty());
+        Status.INVALID,
+        new ArrayList<>(),
+        -1,
+        -1,
+        Bytes.EMPTY,
+        validationResult,
+        Optional.empty(),
+        Optional.empty());
   }
 
   public static TransactionProcessingResult failed(
@@ -70,7 +79,25 @@ public class TransactionProcessingResult {
         gasRemaining,
         Bytes.EMPTY,
         validationResult,
-        revertReason);
+        revertReason,
+        Optional.empty());
+  }
+
+  public static TransactionProcessingResult failed(
+      final long gasUsedByTransaction,
+      final long gasRemaining,
+      final ValidationResult<TransactionInvalidReason> validationResult,
+      final Optional<Bytes> revertReason,
+      final Optional<ExceptionalHaltReason> exceptionalHaltReason) {
+    return new TransactionProcessingResult(
+        Status.FAILED,
+        new ArrayList<>(),
+        gasUsedByTransaction,
+        gasRemaining,
+        Bytes.EMPTY,
+        validationResult,
+        revertReason,
+        exceptionalHaltReason);
   }
 
   public static TransactionProcessingResult successful(
@@ -86,6 +113,7 @@ public class TransactionProcessingResult {
         gasRemaining,
         output,
         validationResult,
+        Optional.empty(),
         Optional.empty());
   }
 
@@ -96,7 +124,8 @@ public class TransactionProcessingResult {
       final long gasRemaining,
       final Bytes output,
       final ValidationResult<TransactionInvalidReason> validationResult,
-      final Optional<Bytes> revertReason) {
+      final Optional<Bytes> revertReason,
+      final Optional<ExceptionalHaltReason> exceptionalHaltReason) {
     this.status = status;
     this.logs = logs;
     this.estimateGasUsedByTransaction = estimateGasUsedByTransaction;
@@ -104,6 +133,7 @@ public class TransactionProcessingResult {
     this.output = output;
     this.validationResult = validationResult;
     this.revertReason = revertReason;
+    this.exceptionalHaltReason = exceptionalHaltReason;
   }
 
   /**
@@ -185,5 +215,14 @@ public class TransactionProcessingResult {
    */
   public Optional<Bytes> getRevertReason() {
     return revertReason;
+  }
+
+  /**
+   * Returns the reason why a transaction was exceptionally halted.
+   *
+   * @return the exceptional halt reason.
+   */
+  public Optional<ExceptionalHaltReason> getExceptionalHaltReason() {
+    return exceptionalHaltReason;
   }
 }
