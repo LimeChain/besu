@@ -14,13 +14,18 @@
  */
 package org.hyperledger.besu.ethereum.mainnet;
 
+import static org.hyperledger.besu.ethereum.vm.OperationTracer.NO_TRACING;
+
 import org.hyperledger.besu.ethereum.chain.Blockchain;
+import org.hyperledger.besu.ethereum.chain.StubbedBlockchain;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountState;
 import org.hyperledger.besu.ethereum.core.Address;
+import org.hyperledger.besu.ethereum.core.Difficulty;
 import org.hyperledger.besu.ethereum.core.EvmAccount;
 import org.hyperledger.besu.ethereum.core.Gas;
 import org.hyperledger.besu.ethereum.core.GasAndAccessedState;
+import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.MutableAccount;
 import org.hyperledger.besu.ethereum.core.ProcessableBlockHeader;
 import org.hyperledger.besu.ethereum.core.Transaction;
@@ -99,7 +104,7 @@ public class MainnetTransactionProcessor {
         blockHeader,
         transaction,
         miningBeneficiary,
-        OperationTracer.NO_TRACING,
+        NO_TRACING,
         blockHashLookup,
         isPersistingPrivateState,
         transactionValidationParams,
@@ -210,6 +215,40 @@ public class MainnetTransactionProcessor {
         operationTracer,
         null,
         isPersistingPrivateState,
+        ImmutableTransactionValidationParams.builder().build(),
+        null);
+  }
+
+  /**
+   * Applies a transaction to the current system state.
+   *
+   * @param worldState The current world state
+   * @param transaction The transaction to process
+   * @param miningBeneficiary The address which is to receive the transaction fee
+   * @param timestamp The block creation timestamp (seconds since the unix epoch)
+   * @return the transaction result
+   */
+  public TransactionProcessingResult processTransaction(
+      final WorldUpdater worldState,
+      final Transaction transaction,
+      final Address miningBeneficiary,
+      final long timestamp) {
+    return processTransaction(
+        new StubbedBlockchain(),
+        worldState,
+        new ProcessableBlockHeader(
+            Hash.EMPTY,
+            miningBeneficiary,
+            Difficulty.ONE,
+            0,
+            transaction.getGasLimit(),
+            timestamp,
+            1L),
+        transaction,
+        miningBeneficiary,
+        NO_TRACING,
+        null,
+        false,
         ImmutableTransactionValidationParams.builder().build(),
         null);
   }
