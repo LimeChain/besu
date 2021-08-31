@@ -57,7 +57,7 @@ public class CreateOperation extends AbstractCreateOperation {
     //                        .getNewContractAddress(frame.getOriginatorAddress());
 
     final Address address =
-        ((DefaultMutableWorldState.Updater) updater.updater().updater())
+        ((DefaultMutableWorldState.Updater) updater)
             .getNewContractAddress(frame.getOriginatorAddress());
 
     //        final Address address1 =

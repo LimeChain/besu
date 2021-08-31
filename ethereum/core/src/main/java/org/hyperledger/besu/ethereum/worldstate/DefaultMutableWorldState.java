@@ -240,8 +240,16 @@ public class DefaultMutableWorldState implements MutableWorldState {
   public static class Updater
       extends AbstractWorldUpdater<DefaultMutableWorldState, WorldStateAccount> {
 
+    DefaultMutableWorldState world;
+
     protected Updater(final DefaultMutableWorldState world) {
       super(world);
+      this.world = world;
+    }
+
+    @Override
+    public WorldUpdater updater() {
+      return new Updater(world);
     }
 
     //    @Override
