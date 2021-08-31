@@ -14,11 +14,12 @@
  */
 package org.hyperledger.besu.ethereum.vm.operations;
 
-import org.hyperledger.besu.ethereum.core.Account;
+import org.hyperledger.besu.ethereum.core.AbstractWorldUpdater;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.Gas;
 import org.hyperledger.besu.ethereum.vm.GasCalculator;
 import org.hyperledger.besu.ethereum.vm.MessageFrame;
+import org.hyperledger.besu.ethereum.worldstate.DefaultMutableWorldState;
 
 public class CreateOperation extends AbstractCreateOperation {
 
@@ -33,10 +34,35 @@ public class CreateOperation extends AbstractCreateOperation {
 
   @Override
   protected Address targetContractAddress(final MessageFrame frame) {
-    final Account sender = frame.getWorldState().get(frame.getRecipientAddress());
+    // frame.getWorldState() -> getNewContractAccount(frame.getOriginatorAddress())
+    // frame.getOriginatorAddress()
+
+    //    final Account sender = frame.getWorldState().get(frame.getRecipientAddress());
     // Decrement nonce by 1 to normalize the effect of transaction execution
+    //    final Address address =
+    //        Address.contractAddress(frame.getRecipientAddress(), sender.getNonce() - 1L);
+
+    var updater = frame.getWorldState();
+
+    if (updater instanceof AbstractWorldUpdater) {
+      System.out.println("AbstractWorldUpdater");
+    } else if (updater instanceof AbstractWorldUpdater.StackedUpdater) {
+      System.out.println("AbstractWorldUpdater.StackedUpdater");
+    }
+
+    //    final Address address = Address.contractAddress(frame.getRecipientAddress(), 0L);
+
+    //    final Address address =
+    //                ((AbstractWorldUpdater) updater)
+    //                        .getNewContractAddress(frame.getOriginatorAddress());
+
     final Address address =
-        Address.contractAddress(frame.getRecipientAddress(), sender.getNonce() - 1L);
+        ((DefaultMutableWorldState.Updater) updater.updater().updater())
+            .getNewContractAddress(frame.getOriginatorAddress());
+
+    //        final Address address1 =
+    // frame.getWorldState().updater().getNewContractAddress(frame.getOriginatorAddress());
+
     frame.warmUpAddress(address);
     return address;
   }

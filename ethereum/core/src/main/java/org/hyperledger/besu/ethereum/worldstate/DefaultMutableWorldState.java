@@ -14,6 +14,8 @@
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
+// import org.hyperledger.besu.ethereum.core.*;
+// import org.hyperledger.besu.ethereum.core.*;
 import org.hyperledger.besu.ethereum.core.AbstractWorldUpdater;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountStorageEntry;
@@ -235,12 +237,17 @@ public class DefaultMutableWorldState implements MutableWorldState {
     }
   }
 
-  protected static class Updater
+  public static class Updater
       extends AbstractWorldUpdater<DefaultMutableWorldState, WorldStateAccount> {
 
     protected Updater(final DefaultMutableWorldState world) {
       super(world);
     }
+
+    //    @Override
+    //    public MutableWorldState getWorldView() {
+    //      return this;
+    //    }
 
     @Override
     protected WorldStateAccount getForMutation(final Address address) {
@@ -320,5 +327,26 @@ public class DefaultMutableWorldState implements MutableWorldState {
       // Clear structures
       wrapped.updatedStorageTries.clear();
     }
+
+    @Override
+    public Address getNewContractAddress(final Address originator) {
+      final DefaultMutableWorldState wrapped = wrappedWorldView();
+      return wrapped.accountStateStore.getNewContractAccount(originator);
+    }
+
+    //    @Override
+    //    public MutableWorldState getWorldState(){
+    //      return wrappedWorldView();
+    //    }
   }
+
+  //  public Address getNewContractAddressOuter(final Address originator) {
+  //    return accountStateStore.getNewContractAccount(originator);
+  //  }
+
+  //  @Override
+  //  public MutableWorldState getWorldState(){
+  //    return this;
+  //  }
+
 }

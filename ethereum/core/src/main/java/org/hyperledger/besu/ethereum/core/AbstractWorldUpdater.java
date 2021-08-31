@@ -149,6 +149,10 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
     return deletedAccounts;
   }
 
+  public Address getNewContractAddress(final Address originator) {
+    return null;
+  }
+
   public static class StackedUpdater<W extends WorldView, A extends Account>
       extends AbstractWorldUpdater<AbstractWorldUpdater<W, A>, UpdateTrackingAccount<A>> {
 
@@ -230,6 +234,15 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
     public void markTransactionBoundary() {
       getUpdatedAccounts().forEach(UpdateTrackingAccount::markTransactionBoundary);
     }
+
+    //    public WorldView getWorldView() {
+    //      return wrappedWorldView();
+    //    }
+
+    //    @Override
+    //    public MutableWorldView getWorldState() {
+    //      return this;
+    //    }
   }
 
   protected void reset() {

@@ -140,4 +140,8 @@ public interface WorldUpdater extends MutableWorldView {
    * @return The parent WorldUpdater if this wraps another one, empty otherwise
    */
   Optional<WorldUpdater> parentUpdater();
+
+  //  MutableWorldView getWorldState();
+
+  //  Address getNewContractAddress(Address originator);
 }

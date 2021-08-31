@@ -98,4 +98,8 @@ public interface AccountStateStore {
    * committed into state with the commit method
    */
   void commit();
+
+  //  Account getNewContractId(Supplier<SequenceNumber> seqNo, Account senderAccount) {
+
+  Address getNewContractAccount(Address sponsor);
 }
