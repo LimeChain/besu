@@ -112,27 +112,27 @@ allprojects {
 
   dependencies { errorprone "com.google.errorprone:error_prone_core" }
 
-  apply plugin: 'com.diffplug.spotless'
-  spotless {
-    java {
-      // This path needs to be relative to each project
-      target '**/src/*/java/**/*.java'
-      removeUnusedImports()
-      googleJavaFormat('1.10.0')
-      importOrder 'org.hyperledger', 'java', ''
-      trimTrailingWhitespace()
-      endWithNewline()
-    }
-    groovyGradle {
-      target '*.gradle'
-      greclipse().configFile(rootProject.file('gradle/formatter.properties'))
-      endWithNewline()
-    }
-    // Below this line are currently only license header tasks
-    format 'groovy', { target '**/src/*/grovy/**/*.groovy' }
-    format 'bash', { target '**/*.sh' }
-    format 'sol', { target '**/*.sol' }
-  }
+//  apply plugin: 'com.diffplug.spotless'
+//  spotless {
+//    java {
+//      // This path needs to be relative to each project
+//      target '**/src/*/java/**/*.java'
+//      removeUnusedImports()
+//      googleJavaFormat('1.10.0')
+//      importOrder 'org.hyperledger', 'java', ''
+//      trimTrailingWhitespace()
+//      endWithNewline()
+//    }
+//    groovyGradle {
+//      target '*.gradle'
+//      greclipse().configFile(rootProject.file('gradle/formatter.properties'))
+//      endWithNewline()
+//    }
+//    // Below this line are currently only license header tasks
+//    format 'groovy', { target '**/src/*/grovy/**/*.groovy' }
+//    format 'bash', { target '**/*.sh' }
+//    format 'sol', { target '**/*.sol' }
+//  }
 
   tasks.withType(JavaCompile) {
     options.compilerArgs += [
