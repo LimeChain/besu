@@ -831,7 +831,7 @@ distributions {
   }
 }
 
-check.dependsOn checkSpdxHeader
+//check.dependsOn checkSpdxHeader
 build.dependsOn verifyDistributions
 artifactoryPublish.dependsOn verifyDistributions
 artifactoryPublish.mustRunAfter(distTar)
